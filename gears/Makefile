@@ -3,17 +3,17 @@
 TARGET	= gears
 
 #Compilers and flags
-CXX		= g++
+CXX		= g++-5
 
 #Compiler flags
 CXXFLAGS	= -g -Wall -Wextra
 CXXFLAGS	+= -I/usr/local/include
-CXXFLAGS	+= -O0
+CXXFLAGS	+= -O0 -fopenmp
 THREADS		= -std=c++11
 
-LINKER	= g++ -o
+LINKER	= g++-5 -o
 #Linking flags
-LFLAGS	= -Wall -I. -lm -I/usr/local/include
+LFLAGS	= -Wall -I. -lm -I/usr/local/include -fopenmp
 GLFW3FLAGS = `pkg-config --static --libs glfw3`
 
 #Set directories for src, objs, and bin
@@ -27,12 +27,10 @@ OBJECTS		:= $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 rm	= rm -f
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-	@$(LINKER) $@ $(LFLAGS) $(GLFW3FLAGS) $(OBJECTS) $(THREADS)
-	@echo "Linking complete!"
+	$(LINKER) $@ $(LFLAGS) $(GLFW3FLAGS) $(OBJECTS) $(THREADS)
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.cpp
-	@$(CXX) $(CXXFLAGS) $(THREADS) -c $< -o $@
-	@echo "Compiled "$<" successfully!"
+	$(CXX) $(CXXFLAGS) $(THREADS) -c $< -o $@
 
 .PHONEY: clean
 clean:

@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstring>
+#include <thread>
+#include <random>
+#include <chrono>
 
 void gears::gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width,
                        GLint teeth, GLfloat tooth_depth) {
@@ -260,4 +264,42 @@ void gears::glloop() {
     animate();
 
     // Buffer swap happens in base class!
+    
+    // Do some openmp stuff here to mimic cytoscore as a test
+    #ifdef ENABLE_OPENMP
+    #pragma omp parallel
+    #endif
+    {
+        int tid;
+        double *fx, *fy, *fz;
+        #ifdef ENABLE_OPENMP
+        tid = omp_get_thread_num();
+        #else
+        tid = 0;
+        #endif
+
+        fx = frc_ + (3*tid)*10;
+        for (int i = 0; i < 3*10; ++i) {
+            fx[i] = 0.0;
+        }
+        fy = frc_ + (3*tid+1)*10;
+        fz = frc_ + (3*tid+2)*10;
+
+        std::cout << "Running on thread: " << tid << std::endl;
+
+        #ifdef ENABLE_OPENMP
+        #pragma omp for schedule(runtime) nowait
+        #endif
+        for (int i = 0; i < 10; ++i) {
+            // simulate work
+            std::mt19937_64 eng{std::random_device{}()};  // or seed however you want
+            std::uniform_int_distribution<> dist{10, 100};
+            std::this_thread::sleep_for(std::chrono::milliseconds{dist(eng)});
+        }
+
+        #ifdef ENABLE_OPENMP
+        #pragma omp barrier
+        #endif
+
+    } // pragma omp parallel
 }
